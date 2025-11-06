@@ -26,7 +26,7 @@ backend/
 └── .env               # Environment variables (not committed)
 ⚙️ Setup Instructions
 1. Clone the project
-git clone https://github.com/yourusername/ai-fashion-backend.git
+git clone 
 cd ai-fashion-backend
 2. Install dependencies
 npm install
