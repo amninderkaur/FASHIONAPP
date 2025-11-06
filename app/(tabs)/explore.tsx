@@ -1,3 +1,4 @@
+//TODO: Get rid of this file if not using it
 import { Image } from 'expo-image';
 import { Platform, StyleSheet } from 'react-native';
 
