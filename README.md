@@ -27,14 +27,13 @@ backend/
 ⚙️ Setup Instructions
 1. Clone the project
 git clone 
-cd ai-fashion-backend
-2. Install dependencies
+3. Install dependencies
 npm install
-3. Create .env file
+4. Create .env file
 Create a .env file in the root directory and add:
 MONGO_URI=mongodb://127.0.0.1:27017/aiFashionDB
 PORT=5000
-4. Start the server
+5. Start the server
 npm start
 or (for live reload during development):
 npx nodemon server.js
