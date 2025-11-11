@@ -18,14 +18,14 @@ public class WardrobeController {
 
     private final WardrobeRepository wardrobeRepository;
 
-    // Get all wardrobe items for logged-in user
+   
     @GetMapping
     public ResponseEntity<List<WardrobeItem>> getAll(@AuthenticationPrincipal User user) {
         List<WardrobeItem> items = wardrobeRepository.findByUserId(user.getId());
         return ResponseEntity.ok(items);
     }
 
-    // Add a new wardrobe item
+    
     @PostMapping
     public ResponseEntity<WardrobeItem> addItem(@AuthenticationPrincipal User user,
                                                 @RequestBody WardrobeItem item) {
