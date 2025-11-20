@@ -1,98 +1,166 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+// app/(tabs)/index.tsx
+import { View, Text, Pressable, StyleSheet, ScrollView } from "react-native";
+import { Link } from "expo-router";
+import { MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
-
-export default function HomeScreen() {
+export default function Dashboard() {
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 20 }}>
+      
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerText}>Dashboard</Text>
+        <Text style={styles.timeText}>09:00 AM</Text>
+      </View>
+
+      {/* Overview Card */}
+      <View style={styles.infoCard}>
+        <Text style={styles.infoTitle}>Overview</Text>
+        <Text style={styles.infoText}>Here’s a quick summary of your dashboard.</Text>
+
+        <Link href="/scanner" asChild>
+          <Pressable style={styles.button}>
+            <Text style={styles.buttonText}>Go to Scanner</Text>
+          </Pressable>
+        </Link>
+      </View>
+
+      {/* Slideshow */}
+      <View style={styles.slideshow}>
+        <Text style={styles.slideshowText}>Slideshow Placeholder</Text>
+      </View>
+
+      {/* Tiles */}
+      <View style={styles.tilesContainer}>
+        <View style={styles.tile}>
+          <Text style={styles.tileNumber}>120</Text>
+          <Text style={styles.tileLabel}>Orders</Text>
+        </View>
+
+        <View style={styles.tile}>
+          <Text style={styles.tileNumber}>24</Text>
+          <Text style={styles.tileLabel}>New Customers</Text>
+        </View>
+
+        <View style={styles.tile}>
+          <Text style={styles.tileNumber}>8</Text>
+          <Text style={styles.tileLabel}>Pending</Text>
+        </View>
+      </View>
+
+      {/* Menu */}
+      <View style={styles.menu}>
+        <Text style={styles.menuTitle}>Menu</Text>
+
+        <Link href="/" asChild>
+          <Pressable style={styles.menuItem}>
+            <MaterialIcons name="dashboard" size={20} color="#00A6A6" style={styles.icon} />
+            <Text>Dashboard</Text>
+          </Pressable>
         </Link>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+        <Link href="/trends" asChild>
+          <Pressable style={styles.menuItem}>
+            <FontAwesome5 name="chart-line" size={20} color="#00A6A6" style={styles.icon} />
+            <Text>Trends</Text>
+          </Pressable>
+        </Link>
+
+        <Link href="/profile" asChild>
+          <Pressable style={styles.menuItem}>
+            <MaterialIcons name="person" size={20} color="#00A6A6" style={styles.icon} />
+            <Text>Account Profile</Text>
+          </Pressable>
+        </Link>
+
+        <Link href="/login" asChild>
+          <Pressable style={styles.menuItem}>
+            <MaterialIcons name="login" size={20} color="#00A6A6" style={styles.icon} />
+            <Text>Login</Text>
+          </Pressable>
+        </Link>
+
+        <Link href="/signup" asChild>
+          <Pressable style={styles.menuItem}>
+            <MaterialIcons name="person-add" size={20} color="#00A6A6" style={styles.icon} />
+            <Text>Signup</Text>
+          </Pressable>
+        </Link>
+      </View>
+
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: { flex: 1, backgroundColor: "#f5f7f6", padding: 15 },
+
+  header: { paddingVertical: 15 },
+  headerText: { fontSize: 28, fontWeight: "700", color: "#222" },
+  timeText: { fontSize: 16, color: "#666", marginTop: 4 },
+
+  infoCard: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 20,
+    marginVertical: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 },
   },
-  stepContainer: {
-    gap: 8,
+  infoTitle: { fontSize: 20, fontWeight: "700", marginBottom: 6, color: "#222" },
+  infoText: { fontSize: 14, color: "#666", marginBottom: 10 },
+
+  button: {
+    backgroundColor: "#33CFC0",
+    paddingVertical: 14,
+    borderRadius: 30,
+    alignItems: "center",
+    marginTop: 10,
+  },
+  buttonText: { color: "#fff", fontSize: 16, fontWeight: "700" },
+
+  slideshow: {
+    backgroundColor: "#e0f9f6",
+    borderRadius: 16,
+    height: 150,
+    justifyContent: "center",
+    alignItems: "center",
+    marginVertical: 10,
+  },
+  slideshowText: { color: "#008080", fontWeight: "700" },
+
+  tilesContainer: { flexDirection: "row", justifyContent: "space-between", marginVertical: 10 },
+  tile: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 15,
+    alignItems: "center",
+    flex: 1,
+    marginHorizontal: 5,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  tileNumber: { fontSize: 22, fontWeight: "700", color: "#00A6A6" },
+  tileLabel: { fontSize: 14, color: "#666" },
+
+  menu: { marginTop: 20 },
+  menuTitle: { fontSize: 18, fontWeight: "700", marginBottom: 10, color: "#222" },
+  menuItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    backgroundColor: "#fff",
+    borderRadius: 16,
     marginBottom: 8,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
+  icon: { marginRight: 10 },
 });
