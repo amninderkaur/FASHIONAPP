@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, Button, Alert, Dimensions } from "react-native";
 import { BarCodeScanner } from "expo-barcode-scanner";
 import { Link } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { Alert, Button, Dimensions, StyleSheet, Text, View } from "react-native";
 
 export default function Scanner() {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [scanned, setScanned] = useState(false);
   const [data, setData] = useState("");
 
-  const { width, height } = Dimensions.get("window");
+  const { width } = Dimensions.get("window");
   const frameSize = width * 0.7;
 
   useEffect(() => {
@@ -48,20 +48,9 @@ export default function Scanner() {
         style={StyleSheet.absoluteFillObject}
       />
 
-      {/* Overlay with transparent edges */}
+      {/* Overlay */}
       <View style={styles.overlay}>
-        {/* Top */}
-        <View style={[styles.overlaySection, { height: (height - frameSize) / 2 }]} />
-        <View style={styles.middleRow}>
-          {/* Left */}
-          <View style={[styles.overlaySection, { width: (width - frameSize) / 2 }]} />
-          {/* Frame */}
-          <View style={[styles.frame, { width: frameSize, height: frameSize }]} />
-          {/* Right */}
-          <View style={[styles.overlaySection, { width: (width - frameSize) / 2 }]} />
-        </View>
-        {/* Bottom */}
-        <View style={[styles.overlaySection, { height: (height - frameSize) / 2 }]} />
+        <View style={[styles.frame, { width: frameSize, height: frameSize }]} />
       </View>
 
       {scanned && (
@@ -97,9 +86,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  middleRow: { flexDirection: "row" },
-  overlaySection: { backgroundColor: "rgba(0,0,0,0.5)" },
-
   frame: {
     borderWidth: 3,
     borderColor: "#007AFF",
