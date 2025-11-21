@@ -1,4 +1,3 @@
-// app/(tabs)/index.tsx
 import { View, Text, Pressable, StyleSheet, ScrollView } from "react-native";
 import { Link } from "expo-router";
 import { MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
@@ -18,9 +17,15 @@ export default function Dashboard() {
         <Text style={styles.infoTitle}>Overview</Text>
         <Text style={styles.infoText}>Here’s a quick summary of your dashboard.</Text>
 
-        <Link href="/scanner" asChild>
+        
+        <Link href="/wardrobe" asChild>
           <Pressable style={styles.button}>
-            <Text style={styles.buttonText}>Go to Scanner</Text>
+            <Text style={styles.buttonText}>Go to Wardrobe</Text>
+          </Pressable>
+        </Link>
+        <Link href="/history" asChild>
+          <Pressable style={styles.button}>
+            <Text style={styles.buttonText}>Go to History</Text>
           </Pressable>
         </Link>
       </View>
@@ -80,7 +85,7 @@ export default function Dashboard() {
           </Pressable>
         </Link>
 
-        <Link href="/signup" asChild>
+        <Link href="/register" asChild>
           <Pressable style={styles.menuItem}>
             <MaterialIcons name="person-add" size={20} color="#00A6A6" style={styles.icon} />
             <Text>Signup</Text>

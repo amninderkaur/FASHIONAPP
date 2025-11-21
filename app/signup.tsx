@@ -1,4 +1,5 @@
-// app/signup.tsx
+// app/signup.tsx 
+// /* css in this document needs to be applied to the register page, then this file can be deleted */
 import { Link } from "expo-router";
 import { Dimensions, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
