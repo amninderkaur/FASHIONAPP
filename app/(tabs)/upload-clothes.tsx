@@ -1,14 +1,14 @@
 import * as ImagePicker from "expo-image-picker";
 import React, { useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    Image,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 // TODO: Replace with backend URL
@@ -180,45 +180,56 @@ const styles = StyleSheet.create({
     paddingTop: 24,
     paddingBottom: 32,
     gap: 16,
+    backgroundColor: "#eeede8", // Background
   },
+
+  // MAIN TITLES
   title: {
     fontSize: 22,
     fontWeight: "700",
-    color: "#111827",
+    color: "#233443", // On Background
   },
   subtitle: {
     fontSize: 14,
-    color: "#6b7280",
+    color: "#96b7bc", // Secondary Variant
     marginBottom: 4,
   },
+
+  // BUTTON ROW
   buttonRow: {
     flexDirection: "row",
     gap: 12,
     marginTop: 10,
   },
+
+  // FILLED BUTTON (PRIMARY)
   button: {
     flex: 1,
-    backgroundColor: "#4f46e5",
+    backgroundColor: "#c0d1bf", // Primary
     paddingVertical: 12,
     borderRadius: 999,
     alignItems: "center",
   },
   buttonText: {
-    color: "#f9fafb",
+    color: "#233443", // On Background
     fontWeight: "600",
   },
+
+  // OUTLINE BUTTON (PRIMARY VARIANT)
   buttonOutline: {
     flex: 1,
-    borderColor: "#4f46e5",
+    borderColor: "#a3bfa9", // Primary Variant
     borderWidth: 1,
     paddingVertical: 12,
     borderRadius: 999,
     alignItems: "center",
   },
   buttonOutlineText: {
-    color: "#4f46e5",
+    color: "#233443", // readable on light background
     fontWeight: "600",
   },
+
+  // PREVIEW IMAGE SECTION
   previewContainer: {
     marginTop: 24,
   },
@@ -227,38 +238,48 @@ const styles = StyleSheet.create({
     aspectRatio: 3 / 4,
     borderRadius: 16,
     marginTop: 8,
+    borderWidth: 2,
+    borderColor: "#a3bfa9", // Primary Variant border
   },
   sectionTitle: {
     fontSize: 16,
     fontWeight: "600",
     marginBottom: 4,
-    color: "#111827",
+    color: "#233443", // On Background
   },
+
+  // UPLOAD BUTTON (SECONDARY)
   uploadButton: {
     marginTop: 24,
-    backgroundColor: "#10b981",
+    backgroundColor: "#b9d6da", // Secondary
     paddingVertical: 14,
     borderRadius: 999,
     alignItems: "center",
   },
   uploadButtonText: {
-    color: "#022c22",
+    color: "#233443",
     fontWeight: "700",
     fontSize: 15,
   },
+
+  // RESULTS BOX
   resultBox: {
-    backgroundColor: "#111827",
+    backgroundColor: "#c0d1bf", // Primary soft panel
     marginTop: 20,
     borderRadius: 14,
     padding: 16,
   },
   resultItem: {
-    color: "#d1d5db",
+    color: "#233443",
     marginBottom: 4,
+    fontWeight: "500",
   },
+
+  
   errorText: {
-    color: "tomato",
+    color: "#d0685f",  
     marginTop: 12,
     fontSize: 14,
+    fontWeight: "600",
   },
 });

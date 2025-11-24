@@ -1,4 +1,4 @@
-// app/(tabs)/upload-outfit.tsx
+
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import * as ImagePicker from 'expo-image-picker';
@@ -211,106 +211,131 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+
   scrollContent: {
     paddingHorizontal: 20,
     paddingTop: 24,
     paddingBottom: 32,
     gap: 16,
+    backgroundColor: "#eeede8", 
   },
+
+  
   title: {
     fontSize: 22,
-    fontWeight: '700',
+    fontWeight: "700",
+    color: "#233443", 
   },
   subtitle: {
     fontSize: 14,
     marginTop: 4,
+    color: "#96b7bc", 
   },
+
+  
   buttonRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
     marginTop: 16,
   },
+
+  
   button: {
     flex: 1,
-    backgroundColor: '#4f46e5',
+    backgroundColor: "#c0d1bf", 
     paddingVertical: 12,
     borderRadius: 999,
-    alignItems: 'center',
+    alignItems: "center",
   },
   buttonText: {
-    color: '#f9fafb',
-    fontWeight: '600',
+    color: "#233443",
+    fontWeight: "600",
     fontSize: 14,
   },
+
+ 
   buttonOutline: {
     flex: 1,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: '#4f46e5',
+    borderColor: "#a3bfa9",
     paddingVertical: 12,
-    alignItems: 'center',
+    alignItems: "center",
   },
   buttonOutlineText: {
-    color: '#4f46e5',
-    fontWeight: '600',
+    color: "#233443",
+    fontWeight: "600",
     fontSize: 14,
   },
+
+ 
   previewContainer: {
     marginTop: 24,
   },
   previewImage: {
-    width: '100%',
+    width: "100%",
     aspectRatio: 3 / 4,
     borderRadius: 16,
     marginTop: 8,
+    borderWidth: 2,
+    borderColor: "#a3bfa9", 
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
+    color: "#233443",
   },
+
+
   analyzeButton: {
     marginTop: 24,
-    backgroundColor: '#10b981',
+    backgroundColor: "#b9d6da", 
     paddingVertical: 14,
     borderRadius: 999,
-    alignItems: 'center',
+    alignItems: "center",
   },
   analyzeButtonDisabled: {
-    opacity: 0.6,
+    opacity: 0.5,
   },
   analyzeButtonText: {
-    color: '#022c22',
-    fontWeight: '700',
+    color: "#233443",
+    fontWeight: "700",
     fontSize: 15,
   },
+
+
   errorText: {
     marginTop: 12,
-    color: '#f97373',
+    color: "#d0685f", 
     fontSize: 13,
+    fontWeight: "600",
   },
+
+ //just for example added 
   recommendationsContainer: {
     marginTop: 24,
     gap: 12,
   },
   recommendationCard: {
-    backgroundColor: '#111827',
+    backgroundColor: "#c0d1bf", 
     borderRadius: 14,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#1f2937',
+    borderColor: "#a3bfa9", 
   },
   recTitle: {
-    color: '#f9fafb',
-    fontWeight: '600',
+    color: "#233443",
+    fontWeight: "700",
     marginBottom: 4,
+    fontSize: 15,
   },
   recDescription: {
-    color: '#d1d5db',
+    color: "#233443",
     fontSize: 13,
   },
   recScore: {
     marginTop: 6,
     fontSize: 12,
-    color: '#9ca3af',
+    color: "#96b7bc",
   },
 });
