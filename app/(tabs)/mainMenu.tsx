@@ -1,6 +1,6 @@
-import { View, Text, Pressable, StyleSheet, ScrollView } from "react-native";
+import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import { Link } from "expo-router";
-import { MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 export default function Dashboard() {
   return (

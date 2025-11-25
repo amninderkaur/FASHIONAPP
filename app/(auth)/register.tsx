@@ -3,7 +3,8 @@ import { useState } from "react";
 import {
   StyleSheet
 } from "react-native";
-
+import { register } from "../../api/auth";
+import { saveToken } from "../../utils/token";
 export default function RegisterScreen() {
   const router = useRouter();
 
@@ -29,6 +30,9 @@ export default function RegisterScreen() {
     setLoading(true);
 
     try {
+       const data = await register(email, password);
+      saveToken(data.token);
+      alert("Registered successfully!");
       // -------------------------------------------------------
       // TODO: When backend is ready, replace with real API:
       //

@@ -1,6 +1,6 @@
 // app/profile.tsx
-import { View, Text, Pressable, StyleSheet, Image, ScrollView } from "react-native";
 import { Link } from "expo-router";
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 export default function Profile() {
   return (
