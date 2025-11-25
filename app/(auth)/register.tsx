@@ -1,7 +1,13 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
-  StyleSheet
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from "react-native";
 import { register } from "../../api/auth";
 import { saveToken } from "../../utils/token";
@@ -63,8 +69,69 @@ export default function RegisterScreen() {
     }
   };
 
+ return (
+    <View style={styles.container}>
+      {/* Background circles */}
+      <View style={styles.circleOne} />
+      <View style={styles.circleTwo} />
 
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <Text style={styles.title}>Create an Account</Text>
+        <Text style={styles.subtitle}>Join us to explore your wardrobe</Text>
+
+        {/* Email */}
+        <TextInput
+          placeholder="Email"
+          placeholderTextColor="#7a8fa1"
+          style={styles.input}
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+        />
+
+        {/* Password */}
+        <TextInput
+          placeholder="Password"
+          placeholderTextColor="#7a8fa1"
+          style={styles.input}
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+        />
+
+        {/* Confirm Password */}
+        <TextInput
+          placeholder="Confirm Password"
+          placeholderTextColor="#7a8fa1"
+          style={styles.input}
+          secureTextEntry
+          value={confirm}
+          onChangeText={setConfirm}
+        />
+
+        {/* Register Button */}
+        <TouchableOpacity style={styles.button} onPress={handleRegister}>
+          {loading ? (
+            <ActivityIndicator color="#233443" />
+          ) : (
+            <Text style={styles.buttonText}>Register</Text>
+          )}
+        </TouchableOpacity>
+
+        {/* Back to login */}
+        <TouchableOpacity
+          style={styles.loginLink}
+          onPress={() => router.push("/(auth)/login")}
+        >
+          <Text style={styles.loginLinkText}>Already have an account? Login</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </View>
+  );
 }
+
+
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
