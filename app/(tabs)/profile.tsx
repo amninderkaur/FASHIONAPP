@@ -44,7 +44,7 @@ export default function Profile() {
         <Text style={styles.buttonText}>Edit Profile</Text>
       </Pressable>
 
-      <Pressable style={[styles.button, { backgroundColor: "#008080" }]}>
+      <Pressable style={[styles.button, { backgroundColor: "#a3bfa9" }]}>
         <Text style={styles.buttonText}>Logout</Text>
       </Pressable>
 
@@ -83,17 +83,17 @@ const styles = StyleSheet.create({
 
   infoContainer: { flexDirection: "row", justifyContent: "space-around", marginBottom: 20 },
   infoCard: {
-    backgroundColor: "#d2f5f1", // light mint highlight
+    backgroundColor: "#b9d6da", // light mint highlight
     padding: 15,
     borderRadius: 12,
     alignItems: "center",
     width: 100,
   },
   infoTitle: { fontSize: 14, color: "#222", marginBottom: 5 },
-  infoNumber: { fontSize: 18, fontWeight: "700", color: "#008080" },
+  infoNumber: { fontSize: 18, fontWeight: "700", color: "b9d6da" },
 
   button: {
-    backgroundColor: "#00BFA6", // teal
+    backgroundColor: "#a3bfa9", // teal
     paddingVertical: 14,
     marginHorizontal: 20,
     borderRadius: 30,

@@ -24,7 +24,7 @@ export default function RegisterScreen() {
   // ----------------------------
   const handleRegister = async () => {
     if (!email.trim() || !password.trim() || !confirm.trim()) {
-      alert("Please fill out all fields.");
+      alert("Please fiill out all fields.");
       return;
     }
 
