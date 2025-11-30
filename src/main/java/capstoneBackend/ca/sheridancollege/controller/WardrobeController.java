@@ -1,24 +1,55 @@
 package capstoneBackend.ca.sheridancollege.controller;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import capstoneBackend.ca.sheridancollege.beans.User;
 import capstoneBackend.ca.sheridancollege.beans.WardrobeItem;
 import capstoneBackend.ca.sheridancollege.beans.repositories.WardrobeRepository;
+
 import lombok.AllArgsConstructor;
 
 @RestController
 @RequestMapping("/api/v1/wardrobe")
-@AllArgsConstructor
 public class WardrobeController {
 
     private final WardrobeRepository wardrobeRepository;
-
-   
+    private final WebClient aiClient;
+    
+    
+    @Value("${upload.path:uploads/wardrobe}")
+    private String uploadPath;
+    
+    public WardrobeController(WardrobeRepository wardrobeRepository, WebClient aiClient) {
+        this.wardrobeRepository = wardrobeRepository;
+        this.aiClient = aiClient;
+    }
+    
     @GetMapping
     public ResponseEntity<List<WardrobeItem>> getAll(@AuthenticationPrincipal User user) {
         List<WardrobeItem> items = wardrobeRepository.findByUserId(user.getId());
@@ -26,11 +57,103 @@ public class WardrobeController {
     }
 
     
-    @PostMapping
-    public ResponseEntity<WardrobeItem> addItem(@AuthenticationPrincipal User user,
-                                                @RequestBody WardrobeItem item) {
-        item.setUserId(user.getId());
-        WardrobeItem savedItem = wardrobeRepository.save(item);
-        return ResponseEntity.ok(savedItem);
+    @PostMapping("/upload")
+    public ResponseEntity<?> uploadAndDetect(
+            @AuthenticationPrincipal User user,
+            @RequestPart("file") MultipartFile file) {
+
+        try {
+
+            // 1) Save image to local file system
+            String imageUrl = saveImage(file, user.getId());
+            
+
+            // 2) Forward file to FastAPI via WebClient
+            MultipartBodyBuilder builder = new MultipartBodyBuilder();
+            builder.part("file", new ByteArrayResource(file.getBytes()) {
+                @Override 
+                public String getFilename() { 
+                    return file.getOriginalFilename(); 
+                }
+            }, MediaType.parseMediaType(file.getContentType()));
+
+           
+
+            Map<String, Object> aiResp = aiClient.post()
+                .uri("/predict")
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .body(BodyInserters.fromMultipartData(builder.build()))
+                .retrieve()
+                .bodyToMono(Map.class)
+                .block();
+
+            System.out.println("AI Response: " + aiResp);
+
+            // 3) Extract detections
+            List<Map<String, Object>> detections = (List<Map<String, Object>>) aiResp.get("detections");
+            
+            if (detections == null || detections.isEmpty()) {
+                return ResponseEntity.ok(Map.of(
+                    "message", "No clothing items detected",
+                    "detections", List.of()
+                ));
+            }
+
+            // 4) Extract class labels
+            List<String> labels = detections.stream()
+                .map(d -> (String) d.get("class"))
+                .distinct()
+                .collect(Collectors.toList());
+
+            
+
+            // 5) Build WardrobeItem and save
+            WardrobeItem item = new WardrobeItem();
+            item.setUserId(user.getId());
+            item.setImageUrl(imageUrl); 
+            item.setDetectedItems(labels);
+            item.setUploadDate(new Date());
+            item.setTag(labels.isEmpty() ? "Unknown" : labels.get(0));
+
+            WardrobeItem saved = wardrobeRepository.save(item);
+
+           
+
+            // 6) Return response
+            return ResponseEntity.ok(Map.of(
+                "message", "Clothing item added successfully",
+                "item", saved,
+                "detections", detections
+            ));
+
+        } catch (Exception e) {
+            System.err.println("Error processing upload: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                 .body(Map.of("error", e.getMessage()));
+        }
+    }
+    
+   
+    private String saveImage(MultipartFile file, String userId) throws IOException {
+        // Create upload directory if it doesn't exist
+        Path uploadDir = Paths.get(uploadPath);
+        if (!Files.exists(uploadDir)) {
+            Files.createDirectories(uploadDir);
+        }
+        
+        // Generate unique filename
+        String originalFilename = file.getOriginalFilename();
+        String fileExtension = originalFilename != null && originalFilename.contains(".") 
+            ? originalFilename.substring(originalFilename.lastIndexOf("."))
+            : ".jpg";
+        String uniqueFilename = userId + "_" + UUID.randomUUID().toString() + fileExtension;
+        
+        // Save file
+        Path filePath = uploadDir.resolve(uniqueFilename);
+        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+        
+        // Return relative path or URL
+        return "/uploads/wardrobe/" + uniqueFilename;
     }
 }

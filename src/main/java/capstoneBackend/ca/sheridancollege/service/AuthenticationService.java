@@ -55,6 +55,6 @@ public class AuthenticationService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         String jwtToken = jwtService.generateToken(user);
-        return AuthenticationResponse.builder().token(jwtToken).build();
+        return AuthenticationResponse.builder().token(jwtToken).userId(user.getId()).build();
     }
 }

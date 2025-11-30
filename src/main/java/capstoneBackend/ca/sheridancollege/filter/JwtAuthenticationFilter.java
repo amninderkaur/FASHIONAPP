@@ -33,32 +33,42 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
 
-        // Skip authentication for public endpoints
-        if (path.startsWith("/api/v1/auth/")) {
+        // Skip public endpoints
+        if (path.startsWith("/api/v1/auth/") ||
+                path.startsWith("/uploads/")) {
             filterChain.doFilter(request, response);
             return;
         }
 
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401
             return;
         }
 
         String jwt = authHeader.substring(7);
-        String email = jwtService.extractUsername(jwt);
+        String email = null;
+
+        try {
+            email = jwtService.extractUsername(jwt);
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        }
 
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-            if (jwtService.isTokenValid(jwt, userDetails)) {
+            if (userDetails != null && jwtService.isTokenValid(jwt, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+            } else {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
             }
         }
 
         filterChain.doFilter(request, response);
     }
 }
-
