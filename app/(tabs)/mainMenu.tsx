@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
   infoText: { fontSize: 14, color: "#666", marginBottom: 10 },
 
   button: {
-    backgroundColor: "#33CFC0",
+    backgroundColor: "#c0d1bf",
     paddingVertical: 14,
     borderRadius: 30,
     alignItems: "center",
@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
   buttonText: { color: "#fff", fontSize: 16, fontWeight: "700" },
 
   slideshow: {
-    backgroundColor: "#e0f9f6",
+    backgroundColor: "#b9d6da",
     borderRadius: 16,
     height: 150,
     justifyContent: "center",
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     shadowOffset: { width: 0, height: 2 },
   },
-  tileNumber: { fontSize: 22, fontWeight: "700", color: "#00A6A6" },
+  tileNumber: { fontSize: 22, fontWeight: "700", color: "#96b7bc" },
   tileLabel: { fontSize: 14, color: "#666" },
 
   menu: { marginTop: 20 },
