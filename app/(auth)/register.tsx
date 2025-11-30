@@ -38,30 +38,7 @@ export default function RegisterScreen() {
     try {
        const data = await register(email, password);
       saveToken(data.token);
-      alert("Registered successfully!");
-      // -------------------------------------------------------
-      // TODO: When backend is ready, replace with real API:
-      //
-      // const res = await fetch("http://your-api/api/v1/auth/register", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ email, password }),
-      // });
-      //
-      // const data = await res.json();
-      //
-      // Save JWT token when backend exists:
-      // await AsyncStorage.setItem("authToken", data.token);
-      // router.replace("/(tabs)");
-      //
-      // -------------------------------------------------------
-
-      // TEMPORARY: allow app to work without backend
-      setTimeout(() => {
-        setLoading(false);
-        alert("Registered! (fake mode, backend not connected)");
-        router.replace("/(auth)/login");
-      }, 800);
+      router.replace("/(auth)/login");
     } catch (err) {
       console.error(err);
       alert("Registration failed (waiting for backend).");

@@ -1,5 +1,6 @@
 import * as ImagePicker from "expo-image-picker";
 import React, { useState } from "react";
+import { getToken, getUserId } from "@/utils/token";
 import {
   ActivityIndicator,
   Alert,
@@ -11,8 +12,8 @@ import {
   View,
 } from "react-native";
 
-// TODO: Replace with backend URL
-const API_BASE_URL = "";
+// Backend URL
+const API_BASE_URL = "http://localhost:8080/api/v1";
 
 type DetectedClothingItem = {
   id: string;
@@ -20,6 +21,23 @@ type DetectedClothingItem = {
   category: string;
   confidence: number;
   imageUrl?: string;
+};
+
+type UploadResponse = {
+  message: string;
+  item: {
+    id: string;
+    userId: number;
+    imageUrl: string;
+    detectedItems: string[];
+    uploadDate: string;
+    tag: string;
+  };
+  detections: Array<{
+    class: string;
+    confidence: number;
+    bbox: number[];
+  }>;
 };
 
 export default function UploadWardrobeScreen() {
@@ -46,7 +64,6 @@ export default function UploadWardrobeScreen() {
     return true;
   };
 
-  // Pick from gallery
   const handlePickImage = async () => {
     const ok = await requestMediaPermissions();
     if (!ok) return;
@@ -63,7 +80,6 @@ export default function UploadWardrobeScreen() {
     }
   };
 
-  // Take photo
   const handleTakePhoto = async () => {
     const ok = await requestCameraPermissions();
     if (!ok) return;
@@ -76,55 +92,89 @@ export default function UploadWardrobeScreen() {
     }
   };
 
-  // Upload to backend
-  const handleUploadToWardrobe = async () => {
-    if (!imageUri) {
-      Alert.alert("No image", "Please choose or take a photo first.");
-      return;
-    }
+ const handleUploadToWardrobe = async () => {
+  if (!imageUri) return;
 
-    setUploading(true);
-    setError(null);
-    setResult(null);
+  setUploading(true);
+  setError(null);
+  setResult(null);
 
-    try {
-      const formData = new FormData();
-      const filename = imageUri.split("/").pop() ?? "item.jpg";
-      const extMatch = /\.(\w+)$/.exec(filename);
-      const fileType = extMatch ? `image/${extMatch[1]}` : "image/jpeg";
+  try {
+    const token = await getToken();
+    if (!token) throw new Error("No authentication token found");
 
+    const uriParts = imageUri.split("/");
+    const fileName = uriParts[uriParts.length - 1];
+    const ext = fileName.split(".").pop()?.toLowerCase();
+    const mimeType =
+      ext === "jpg" || ext === "jpeg" ? "image/jpeg" : `image/${ext}`;
+
+    const formData = new FormData();
+
+    if (imageUri.startsWith("blob:") || imageUri.startsWith("http")) {
+      const response = await fetch(imageUri);
+      const blob = await response.blob();
+      const file = new File([blob], fileName, { type: mimeType });
+      formData.append("file", file);
+    } else {
       formData.append("file", {
         uri: imageUri,
-        name: filename,
-        type: fileType,
+        name: fileName,
+        type: mimeType,
       } as any);
-
-      const response = await fetch(`${API_BASE_URL}/api/v1/wardrobe/upload`, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const text = await response.text();
-        throw new Error(text || "Failed to upload");
-      }
-
-      const data = (await response.json()) as DetectedClothingItem;
-      setResult(data);
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message);
-    } finally {
-      setUploading(false);
     }
-  };
+
+    const uploadResult = await new Promise<string>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+
+      xhr.open("POST", `${API_BASE_URL}/wardrobe/upload`);
+      xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+
+      xhr.onload = () => {
+        if (xhr.status === 200) resolve(xhr.responseText);
+        else reject(new Error(`Upload failed: ${xhr.status} - ${xhr.responseText}`));
+      };
+
+      xhr.onerror = () => reject(new Error("Network error"));
+      xhr.send(formData);
+    });
+
+    const data: UploadResponse = JSON.parse(uploadResult);
+
+    // If you still want detection results, keep this (optional)
+    if (data.detections && data.detections.length > 0) {
+      const first = data.detections[0];
+
+      const mapped: DetectedClothingItem = {
+        id: data.item.id,
+        name: first.class,
+        category: data.item.tag,
+        confidence: first.confidence,
+        imageUrl: data.item.imageUrl,
+      };
+
+      setResult(mapped);
+    }
+
+    // 🔥 FULL SCREEN RESET HERE
+    setImageUri(null);
+    setResult(null);
+    setError(null);
+
+  } catch (err: any) {
+    console.error("Upload failed:", err);
+    setError(err.message || "Upload failed");
+  } finally {
+    setUploading(false);
+  }
+};
+
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContent}>
       <Text style={styles.title}>Upload a clothing item</Text>
       <Text style={styles.subtitle}>
-        Add new pieces to your wardrobe by taking a photo or selecting one from
-        your gallery.
+        Add new pieces to your wardrobe by taking a photo or selecting one from your gallery.
       </Text>
 
       <View style={styles.buttonRow}>
@@ -136,6 +186,7 @@ export default function UploadWardrobeScreen() {
           <Text style={styles.buttonOutlineText}>Take a photo</Text>
         </TouchableOpacity>
       </View>
+
       {imageUri && (
         <View style={styles.previewContainer}>
           <Text style={styles.sectionTitle}>Preview</Text>
@@ -144,10 +195,7 @@ export default function UploadWardrobeScreen() {
       )}
 
       <TouchableOpacity
-        style={[
-          styles.uploadButton,
-          (!imageUri || uploading) && { opacity: 0.6 },
-        ]}
+        style={[styles.uploadButton, (!imageUri || uploading) && { opacity: 0.6 }]}
         disabled={!imageUri || uploading}
         onPress={handleUploadToWardrobe}
       >
@@ -160,126 +208,26 @@ export default function UploadWardrobeScreen() {
 
       {error && <Text style={styles.errorText}>{error}</Text>}
 
-      {result && (
-        <View style={styles.resultBox}>
-          <Text style={styles.sectionTitle}>Item Added!</Text>
-          <Text style={styles.resultItem}>Name: {result.name}</Text>
-          <Text style={styles.resultItem}>Category: {result.category}</Text>
-          <Text style={styles.resultItem}>
-            Confidence: {(result.confidence * 100).toFixed(1)}%
-          </Text>
-        </View>
-      )}
+     
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 24,
-    paddingBottom: 32,
-    gap: 16,
-    backgroundColor: "#eeede8", // Background
-  },
-
-  // MAIN TITLES
-  title: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: "#233443", // On Background
-  },
-  subtitle: {
-    fontSize: 14,
-    color: "#96b7bc", // Secondary Variant
-    marginBottom: 4,
-  },
-
-  // BUTTON ROW
-  buttonRow: {
-    flexDirection: "row",
-    gap: 12,
-    marginTop: 10,
-  },
-
-  // FILLED BUTTON (PRIMARY)
-  button: {
-    flex: 1,
-    backgroundColor: "#c0d1bf", // Primary
-    paddingVertical: 12,
-    borderRadius: 999,
-    alignItems: "center",
-  },
-  buttonText: {
-    color: "#233443", // On Background
-    fontWeight: "600",
-  },
-
-  // OUTLINE BUTTON (PRIMARY VARIANT)
-  buttonOutline: {
-    flex: 1,
-    borderColor: "#a3bfa9", // Primary Variant
-    borderWidth: 1,
-    paddingVertical: 12,
-    borderRadius: 999,
-    alignItems: "center",
-  },
-  buttonOutlineText: {
-    color: "#233443", // readable on light background
-    fontWeight: "600",
-  },
-
-  // PREVIEW IMAGE SECTION
-  previewContainer: {
-    marginTop: 24,
-  },
-  previewImage: {
-    width: "100%",
-    aspectRatio: 3 / 4,
-    borderRadius: 16,
-    marginTop: 8,
-    borderWidth: 2,
-    borderColor: "#a3bfa9", // Primary Variant border
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 4,
-    color: "#233443", // On Background
-  },
-
-  // UPLOAD BUTTON (SECONDARY)
-  uploadButton: {
-    marginTop: 24,
-    backgroundColor: "#b9d6da", // Secondary
-    paddingVertical: 14,
-    borderRadius: 999,
-    alignItems: "center",
-  },
-  uploadButtonText: {
-    color: "#233443",
-    fontWeight: "700",
-    fontSize: 15,
-  },
-
-  // RESULTS BOX
-  resultBox: {
-    backgroundColor: "#c0d1bf", // Primary soft panel
-    marginTop: 20,
-    borderRadius: 14,
-    padding: 16,
-  },
-  resultItem: {
-    color: "#233443",
-    marginBottom: 4,
-    fontWeight: "500",
-  },
-
-  
-  errorText: {
-    color: "#d0685f",  
-    marginTop: 12,
-    fontSize: 14,
-    fontWeight: "600",
-  },
+  scrollContent: { paddingHorizontal: 20, paddingTop: 24, paddingBottom: 32, gap: 16, backgroundColor: "#eeede8" },
+  title: { fontSize: 22, fontWeight: "700", color: "#233443" },
+  subtitle: { fontSize: 14, color: "#96b7bc", marginBottom: 4 },
+  buttonRow: { flexDirection: "row", gap: 12, marginTop: 10 },
+  button: { flex: 1, backgroundColor: "#c0d1bf", paddingVertical: 12, borderRadius: 999, alignItems: "center" },
+  buttonText: { color: "#233443", fontWeight: "600" },
+  buttonOutline: { flex: 1, borderColor: "#a3bfa9", borderWidth: 1, paddingVertical: 12, borderRadius: 999, alignItems: "center" },
+  buttonOutlineText: { color: "#233443", fontWeight: "600" },
+  previewContainer: { marginTop: 24 },
+  previewImage: { width: "100%", aspectRatio: 3 / 4, borderRadius: 16, marginTop: 8, borderWidth: 2, borderColor: "#a3bfa9" },
+  sectionTitle: { fontSize: 16, fontWeight: "600", marginBottom: 4, color: "#233443" },
+  uploadButton: { marginTop: 24, backgroundColor: "#b9d6da", paddingVertical: 14, borderRadius: 999, alignItems: "center" },
+  uploadButtonText: { color: "#233443", fontWeight: "700", fontSize: 15 },
+  resultBox: { backgroundColor: "#c0d1bf", marginTop: 20, borderRadius: 14, padding: 16 },
+  resultItem: { color: "#233443", marginBottom: 4, fontWeight: "500" },
+  errorText: { color: "#d0685f", marginTop: 12, fontSize: 14, fontWeight: "600" },
 });

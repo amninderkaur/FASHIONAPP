@@ -17,12 +17,7 @@ export default function ClothingDetails() {
 
   useEffect(() => {
     const loadItem = async () => {
-      // TODO: When backend is ready:
-      //
-      // const res = await fetch(`http://your-api/wardrobe/${clothingId}`);
-      // const data: WardrobeItem = await res.json();
-      // setItem(data);
-      //
+      
       setLoading(false); // temporary
     };
 

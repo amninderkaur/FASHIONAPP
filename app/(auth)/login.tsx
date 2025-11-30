@@ -2,7 +2,7 @@ import { Link, useRouter } from 'expo-router';
 import React from 'react';
 import { ActivityIndicator, Dimensions, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { login } from '../../api/auth';
-import { saveToken } from '../../utils/token';
+import { saveToken, saveUserId } from '../../utils/token';
 const { width, height } = Dimensions.get("window");
 
 export default function LoginScreen() {
@@ -48,23 +48,22 @@ export default function LoginScreen() {
     }
 
     const onSubmit = async () => {
-        if (!validateForm()) return;
-        setLoading(true);
-        try {
-            //const response = await fetch('API_URL', ); 
-            // const response = await Response.json(); 
-            const data = await login(email, password);
-            saveToken(data.token);
-            alert("Logged in successfully!"); // <--- replace with actual API call later
+    if (!validateForm()) return;
+    setLoading(true);
+    try {
+        const data = await login(email, password); 
+        console.log("Login response:", data);
+        await saveToken(data.token);       
+        await saveUserId(data.userId);     
+        router.replace('/(tabs)/mainMenu');
+    } catch (err: any) {
+        setError(err.message || 'Login failed. Please try again.');
+    } finally {
+        setLoading(false);
+    }
+};
 
-            //TODO: store token securely, e.g. SecureStore, AsyncStorage, Context, Redux, etc. router.replace('/(tabs)'); 
-            router.replace('/(tabs)/mainMenu');
-        } catch (err: any) { setError(err.message || 'Login failed. Please try again.'); }
-        finally {
-            setLoading(false);
-        }
-    };
-
+   
     return (<KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <View style={styles.container}>
             <View style={styles.circleOne}/>

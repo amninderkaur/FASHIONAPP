@@ -1,57 +1,124 @@
 import { Link } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { 
+  ActivityIndicator, 
+  Alert, 
+  Image, 
+  RefreshControl, 
+  ScrollView, 
+  StyleSheet, 
+  Text, 
+  TouchableOpacity, 
+  View 
+} from "react-native";
+import { getToken } from "@/utils/token";
 
-type HistoryItem = {
+const API_BASE_URL = "http://localhost:8080/api/v1";
+
+type WardrobeItem = {
   id: string;
-  title: string;
+  userId: number;
   imageUrl: string;
-  date: string;
+  detectedItems: string[];
+  uploadDate: string;
+  tag: string;
 };
 
 export default function HistoryIndex() {
-  const [items, setItems] = useState<HistoryItem[]>([]);
+  const [items, setItems] = useState<WardrobeItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadWardrobeItems = async () => {
+    try {
+      const token = await getToken();
+      
+      if (!token) {
+        Alert.alert("Error", "Please login to view your wardrobe");
+        setLoading(false);
+        return;
+      }
+
+      
+
+      const response = await fetch(`${API_BASE_URL}/wardrobe`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to load wardrobe: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Wardrobe items:", data);
+
+      // Sort by upload date (newest first)
+      const sortedItems = data.sort((a: WardrobeItem, b: WardrobeItem) => 
+        new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime()
+      );
+
+      setItems(sortedItems);
+    } catch (error: any) {
+      console.error("Failed to load wardrobe:", error);
+      Alert.alert("Error", error.message || "Failed to load wardrobe items");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    const loadHistory = async () => {
-      // TODO: Replace with backend API:
-      //
-      // const res = await fetch("http://api/history");
-      // const data = await res.json();
-      // setItems(data);
-      //
-      setItems([
-        {
-          id: "1",
-          title: "Green Jacket Outfit",
-          imageUrl: "https://via.placeholder.com/300",
-          date: "2025-01-21",
-        },
-        {
-          id: "2",
-          title: "Blue Denim Fit",
-          imageUrl: "https://via.placeholder.com/300",
-          date: "2025-01-22",
-        },
-      ]);
-      setLoading(false);
-    };
-
-    loadHistory();
+    loadWardrobeItems();
   }, []);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadWardrobeItems();
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
 
   if (loading) {
     return (
       <View style={styles.center}>
-        <Text style={styles.loadingText}>Loading...</Text>
+        <ActivityIndicator size="large" color="#233443" />
+        <Text style={styles.loadingText}>Loading your wardrobe...</Text>
+      </View>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.emptyTitle}>Your wardrobe is empty</Text>
+        <Text style={styles.emptySubtitle}>
+          Start adding clothing items to build your wardrobe!
+        </Text>
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>History</Text>
+    <ScrollView 
+      style={styles.container} 
+      contentContainerStyle={styles.content}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
+      <Text style={styles.title}>My Wardrobe</Text>
+      <Text style={styles.subtitle}>{items.length} item{items.length !== 1 ? 's' : ''}</Text>
 
       {items.map((item) => (
         <Link 
@@ -60,11 +127,24 @@ export default function HistoryIndex() {
           asChild
         >
           <TouchableOpacity style={styles.card}>
-            <Image source={{ uri: item.imageUrl }} style={styles.image} />
+            <Image 
+              source={{ 
+                uri: `http://localhost:8080${item.imageUrl}`
+              }} 
+              style={styles.image}
+              resizeMode="cover"
+            />
 
             <View style={styles.cardInfo}>
-              <Text style={styles.cardTitle}>{item.title}</Text>
-              <Text style={styles.cardDate}>{item.date}</Text>
+              <Text style={styles.cardTitle}>{item.tag}</Text>
+              
+              {item.detectedItems && item.detectedItems.length > 0 && (
+                <Text style={styles.detectedItems}>
+                  {item.detectedItems.join(", ")}
+                </Text>
+              )}
+              
+              <Text style={styles.cardDate}>{formatDate(item.uploadDate)}</Text>
             </View>
           </TouchableOpacity>
         </Link>
@@ -86,6 +166,11 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: "700",
     color: "#233443",
+    marginBottom: 4,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: "#96b7bc",
     marginBottom: 10,
   },
   center: {
@@ -93,10 +178,23 @@ const styles = StyleSheet.create({
     backgroundColor: "#eeede8",
     justifyContent: "center",
     alignItems: "center",
+    padding: 20,
   },
   loadingText: {
     color: "#233443",
     fontSize: 16,
+    marginTop: 12,
+  },
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#233443",
+    marginBottom: 8,
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    color: "#96b7bc",
+    textAlign: "center",
   },
   card: {
     backgroundColor: "#ffffff",
@@ -107,19 +205,27 @@ const styles = StyleSheet.create({
   },
   image: {
     width: "100%",
-    height: 180,
+    height: 200,
+    backgroundColor: "#f0f0f0",
   },
   cardInfo: {
     padding: 12,
   },
   cardTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "600",
     color: "#233443",
+    textTransform: "capitalize",
+  },
+  detectedItems: {
+    fontSize: 13,
+    color: "#5a8a8d",
+    marginTop: 4,
+    textTransform: "capitalize",
   },
   cardDate: {
     color: "#96b7bc",
-    marginTop: 4,
-    fontSize: 13,
+    marginTop: 6,
+    fontSize: 12,
   },
 });
