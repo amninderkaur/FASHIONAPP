@@ -25,7 +25,11 @@ jobs:
           distribution: 'microsoft'
 
       - name: Build with Maven
+<<<<<<< HEAD
         run: mvn clean package -DskipTests
+=======
+        run: mvn clean install
+>>>>>>> 253cf802d7f8cfded62f9f95105151b3db921829
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
