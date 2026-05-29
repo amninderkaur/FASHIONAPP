@@ -18,8 +18,10 @@ import EditInfoSection from "@/components/Profile/EditInfoSection";
 import ProfileActionCards from "@/components/Profile/ProfileActionCards";
 import ProfileHeader from "@/components/Profile/ProfileHeader";
 import ReviewsSection from "@/components/Profile/ReviewSection";
+import TasteProfileCard from "@/components/TasteProfileCard";
 import { globalStyles } from "@/constants/globalStyles";
 import { useAppTheme } from "@/context/ThemeContext";
+import { getTasteProfile } from "@/api/outfit";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
@@ -84,12 +86,17 @@ export default function Profile() {
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
   // temporary placeholder stats until
-  // backend endpoints are implemented 
+  // backend endpoints are implemented
   const profileStats = {
     outfitsGenerated: 0,
     outfitsReviewed: 0,
     wardrobeItems: 0,
   };
+
+  // Taste profile state
+  const [tasteProfile, setTasteProfile] = useState<any>(null);
+  const [tasteProfileLocked, setTasteProfileLocked] = useState(false);
+  const [tasteProfileLoading, setTasteProfileLoading] = useState(true);
 
   // animates the current section
   // out, switches the section, 
@@ -153,6 +160,25 @@ export default function Profile() {
       .catch(() => {})
       .finally(() => {
         setProfileLoading(false);
+      });
+  }, []);
+
+  // load taste profile
+  useEffect(() => {
+    getTasteProfile()
+      .then((data) => {
+        setTasteProfile(data);
+        setTasteProfileLocked(false);
+      })
+      .catch((err: any) => {
+        const status = err?.response?.status;
+        if (status === 404) {
+          setTasteProfileLocked(true);
+        }
+        // other errors: show nothing
+      })
+      .finally(() => {
+        setTasteProfileLoading(false);
       });
   }, []);
 
@@ -308,6 +334,44 @@ export default function Profile() {
             <ReviewsSection onClose={closeSection} />
           )}
         </Animated.View>
+
+        {/* ── Your Taste Profile ── */}
+        {!tasteProfileLoading && (
+          <View style={styles.tasteSectionWrapper}>
+            <Text style={[styles.tasteSectionTitle, { color: themeColors.text }]}>
+              Your Taste Profile
+            </Text>
+
+            {tasteProfile && (
+              <TasteProfileCard profile={tasteProfile} />
+            )}
+
+            {tasteProfileLocked && (
+              <View
+                style={[
+                  styles.tasteLockedCard,
+                  { backgroundColor: themeColors.card },
+                ]}
+              >
+                <Text style={styles.tasteLockedIcon}>🔒</Text>
+                <Text style={[styles.tasteLockedTitle, { color: themeColors.text }]}>
+                  AI Taste Profile
+                </Text>
+                <Text style={[styles.tasteLockedBody, { color: themeColors.muted }]}>
+                  Rate at least 3 outfits to unlock personalised suggestions
+                </Text>
+                <TouchableOpacity
+                  style={[styles.tasteLockedBtn, { backgroundColor: themeColors.button }]}
+                  onPress={() => router.push("/(tabs)/history" as any)}
+                >
+                  <Text style={[styles.tasteLockedBtnText, { color: themeColors.white }]}>
+                    Go to Outfit History
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        )}
       </View>
     </ScrollView>
 
@@ -471,5 +535,52 @@ const styles = StyleSheet.create({
   modalBtnText: {
     fontWeight: "700",
     fontSize: 16,
+  },
+
+  // Taste profile
+  tasteSectionWrapper: {
+    width: "100%",
+    marginTop: 4,
+  },
+  tasteSectionTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 12,
+  },
+  tasteLockedCard: {
+    borderRadius: 16,
+    padding: 20,
+    alignItems: "center",
+    gap: 8,
+    shadowColor: "#000",
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
+  tasteLockedIcon: {
+    fontSize: 32,
+    marginBottom: 4,
+  },
+  tasteLockedTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    textAlign: "center",
+  },
+  tasteLockedBody: {
+    fontSize: 13,
+    textAlign: "center",
+    lineHeight: 18,
+    marginBottom: 8,
+  },
+  tasteLockedBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 999,
+    marginTop: 4,
+  },
+  tasteLockedBtnText: {
+    fontWeight: "700",
+    fontSize: 14,
   },
 });
